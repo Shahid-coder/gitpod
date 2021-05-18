@@ -182,11 +182,8 @@ func (m *Manager) StartWorkspace(ctx context.Context, req *api.StartWorkspaceReq
 	}
 	tracing.LogEvent(span, "pod created")
 
-	// only regular workspaces get a service, the others are fine with just pod
+	// all workspaces get a service now
 	okResponse := &api.StartWorkspaceResponse{Url: startContext.WorkspaceURL}
-	if req.Type != api.WorkspaceType_REGULAR {
-		return okResponse, nil
-	}
 
 	// mandatory Theia service
 	servicePrefix := getServicePrefix(req)

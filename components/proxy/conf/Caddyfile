@@ -125,6 +125,20 @@ https://{$GITPOD_DOMAIN} {
 		redir {http.gitpod.workspace_download_url} 303
 	}
 
+	@headless_logs path /headless-logs*
+	handle @headless_logs {
+		gitpod.cors_origin {
+			base_domain {$GITPOD_DOMAIN}
+		}
+
+		import compression
+
+		reverse_proxy server.{$KUBE_NAMESPACE}.{$KUBE_DOMAIN}:3000 {
+			import upstream_headers
+			import upstream_connection
+		}
+	}
+
 	@backend_wss path /api/gitpod
 	handle @backend_wss {
 		uri strip_prefix /api

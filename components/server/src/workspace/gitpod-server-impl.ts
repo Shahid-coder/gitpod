@@ -46,6 +46,8 @@ import { MessageBusIntegration } from './messagebus-integration';
 import { WorkspaceDeletionService } from './workspace-deletion-service';
 import { WorkspaceFactory } from './workspace-factory';
 import { WorkspaceStarter } from './workspace-starter';
+import { HeadlessLogSources } from "@gitpod/gitpod-protocol/lib/headless-workspace-log";
+import { WorkspaceLogService } from "./workspace-log-service";
 
 
 @injectable()
@@ -85,6 +87,8 @@ export class GitpodServerImpl<Client extends GitpodClient, Server extends Gitpod
     @inject(BlobServiceClient) protected readonly blobServiceClient: BlobServiceClient;
 
     @inject(GitTokenScopeGuesser) protected readonly gitTokenScopeGuesser: GitTokenScopeGuesser;
+
+    @inject(WorkspaceLogService) protected readonly workspaceLogService: WorkspaceLogService;
 
     /** Id the uniquely identifies this server instance */
     public readonly uuid: string = uuidv4();
@@ -1159,6 +1163,31 @@ export class GitpodServerImpl<Client extends GitpodClient, Server extends Gitpod
         } catch (err) {
             log.warn(`Cannot watch logs for workspaceId ${workspaceId}:`, err)
         }
+    }
+
+    async getHeadlessLog(workspaceId: string): Promise<HeadlessLogSources> {
+        const user = this.checkAndBlockUser();
+        const span = opentracing.globalTracer().startSpan("getHeadlessLog");
+        const context: LogContext = { userId: user.id, workspaceId };
+        log.info(context, 'getHeadlessLog', { workspaceId });
+
+        const ws = await this.workspaceDb.trace({span}).findById(workspaceId);
+        if (!ws) {
+            throw new ResponseError(ErrorCodes.NOT_FOUND, `Workspace ${workspaceId} not found`);
+        }
+
+        await this.guardAccess({ kind: 'workspaceLog', subject: ws }, 'get');
+
+        const wsi = await this.workspaceDb.trace({span}).findCurrentInstance(ws.id);
+        if (!wsi) {
+            throw new ResponseError(ErrorCodes.NOT_FOUND, `Workspace instance for ${workspaceId} not found`);
+        }
+
+        const sources = await this.workspaceLogService.getWorkspaceLogURLs(wsi);
+        if (!sources) {
+            throw new ResponseError(ErrorCodes.NOT_FOUND, `Headless logs for ${workspaceId} not found`);
+        }
+        return sources;
     }
 
     async watchHeadlessWorkspaceLogs(workspaceId: string): Promise<void> {

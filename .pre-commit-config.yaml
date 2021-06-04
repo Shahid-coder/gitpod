@@ -1,0 +1,22 @@
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v2.3.0
+  hooks:
+    #- id: check-yaml
+    #  args: [--allow-multiple-documents]
+    - id: end-of-file-fixer
+    - id: trailing-whitespace
+    - id: check-symlinks
+    - id: mixed-line-ending
+
+- repo: https://github.com/jumanjihouse/pre-commit-hooks
+  rev: "2.1.5"
+  hooks:
+    - id: forbid-binary
+      exclude: |
+        (?x)^(
+          .*\.(png|svg|ico|gpg)
+        )$
+    - id: script-must-have-extension
+    - id: shellcheck
+      args: [-e, "SC1090,SC1091"]

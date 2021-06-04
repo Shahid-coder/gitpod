@@ -185,3 +185,7 @@ RUN mkdir -p ~/.terraform \
 RUN sudo install-packages graphviz
 
 ENV PATH=$PATH:$HOME/.aws-iam:$HOME/.terraform
+
+# Install pre-commit https://pre-commit.com/#install
+RUN sudo install-packages shellcheck \
+    && sudo pip3 install pre-commit

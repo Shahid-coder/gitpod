@@ -131,11 +131,11 @@ https://{$GITPOD_DOMAIN} {
 			base_domain {$GITPOD_DOMAIN}
 		}
 
-		import compression
-
 		reverse_proxy server.{$KUBE_NAMESPACE}.{$KUBE_DOMAIN}:3000 {
 			import upstream_headers
 			import upstream_connection
+
+			flush_interval -1
 		}
 	}
 

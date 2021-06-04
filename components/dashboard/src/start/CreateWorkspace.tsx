@@ -16,6 +16,7 @@ import StartWorkspace from "./StartWorkspace";
 import { openAuthorizeWindow } from "../provider-utils";
 import { SelectAccountPayload } from "@gitpod/gitpod-protocol/lib/auth";
 import { SelectAccountModal } from "../settings/SelectAccountModal";
+import { watchHeadlessLogs } from "./WorkspaceLogs";
 
 const WorkspaceLogs = React.lazy(() => import('./WorkspaceLogs'));
 
@@ -317,6 +318,7 @@ interface RunningPrebuildViewProps {
   runningPrebuild: {
     prebuildID: string
     workspaceID: string
+    instanceID: string
     starting: RunningWorkspacePrebuildStarting
     sameCluster: boolean
   };
@@ -339,25 +341,11 @@ function RunningPrebuildView(props: RunningPrebuildViewProps) {
       }
       pollTimeout = setTimeout(pollIsPrebuildDone, 10000);
     };
-    const watchPrebuild = () => {
-      service.server.watchHeadlessWorkspaceLogs(props.runningPrebuild.workspaceID);
-      pollIsPrebuildDone();
-    };
-    watchPrebuild();
-
-    const toDispose = service.registerClient({
-      notifyDidOpenConnection: () => watchPrebuild(),
-      onHeadlessWorkspaceLogs: event => {
-        if (event.workspaceID !== props.runningPrebuild.workspaceID) {
-          return;
-        }
-        logsEmitter.emit('logs', event.text);
-      },
-    });
-
+    
+    const disposables = watchHeadlessLogs(service.server, props.runningPrebuild.instanceID, (chunk) => logsEmitter.emit('logs', chunk), pollIsPrebuildDone);
     return function cleanup() {
       clearTimeout(pollTimeout!);
-      toDispose.dispose();
+      disposables.dispose();
     };
   }, []);
 

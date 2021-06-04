@@ -1001,6 +1001,7 @@ export interface WorkspaceCreationResult {
     runningWorkspacePrebuild?: {
         prebuildID: string
         workspaceID: string
+        instanceID: string
         starting: RunningWorkspacePrebuildStarting
         sameCluster: boolean
     }

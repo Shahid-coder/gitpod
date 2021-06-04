@@ -12,7 +12,7 @@ import { CompositeResourceAccessGuard, OwnerResourceGuard, WorkspaceLogAccessGua
 import { HostContextProvider } from "../auth/host-context-provider";
 import { DBWithTracing, TracedWorkspaceDB } from "@gitpod/gitpod-db/lib/traced-db";
 import { WorkspaceDB } from "@gitpod/gitpod-db/lib/workspace-db";
-import { WorkspaceLogService } from "./workspace-log-service";
+import { Timeout, WorkspaceLogService } from "./workspace-log-service";
 import * as opentracing from 'opentracing';
 import { asyncHandler } from "../express-util";
 
@@ -27,9 +27,9 @@ export class HeadlessLogController {
     get apiRouter(): express.Router {
         const router = express.Router();
 
-        router.get("/:workspaceId/:terminalId", asyncHandler(async (req: express.Request, res: express.Response) => {
+        router.get("/:instanceId/:terminalId", asyncHandler(async (req: express.Request, res: express.Response) => {
             const span = opentracing.globalTracer().startSpan("/headless-logs/");
-            const params = { workspaceId: req.params.workspaceId, terminalId: req.params.terminalId };
+            const params = { instanceId: req.params.instanceId, terminalId: req.params.terminalId };
             if (!req.isAuthenticated() || !User.is(req.user)) {
                 res.sendStatus(401);
                 log.warn("unauthenticated headless log request", params);
@@ -43,23 +43,22 @@ export class HeadlessLogController {
                 return;
             }
 
-            const workspaceId = params.workspaceId;
+            const instanceId = params.instanceId;
             const [workspace, instance] = await Promise.all([
-                this.workspaceDb.trace({span}).findById(workspaceId),
-                this.workspaceDb.trace({span}).findCurrentInstance(workspaceId),
+                this.workspaceDb.trace({span}).findByInstanceId(instanceId),
+                this.workspaceDb.trace({span}).findInstanceById(instanceId),
             ]);
             if (!workspace) {
                 res.sendStatus(404);
-                log.warn(`workspace ${workspaceId} not found`);
+                log.warn(`workspace for instanceId ${instanceId} not found`);
                 return;
             }
             if (!instance) {
                 res.sendStatus(404);
-                log.warn(`current instance for ${workspaceId} not found`);
+                log.warn(`instance ${instanceId} not found`);
                 return;
             }
-            const instanceId = instance.id;
-            const logCtx = { instanceId, workspaceId };
+            const logCtx = { instanceId, workspaceId: workspace.id };
 
             try {
                 // [gpl] It's a bit sad that we have to duplicate this access check... but that's due to the way our API code is written
@@ -73,37 +72,27 @@ export class HeadlessLogController {
                     return;
                 }
 
-                const workspaceLog = await this.workspaceLogService.getWorkspaceLog(instance, params.terminalId);
-                if (!workspaceLog) {
-                    res.sendStatus(404);
-                    return;
-                }
-
-                res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+                res.setHeader('Content-Type', 'text/html; charset=utf-8');  // is text/plain, but with that node.js won't stream...
                 res.setHeader('Transfer-Encoding', 'chunked');
 
-                await new Promise<void>((resolve, reject) => {
-                    const { stream } = workspaceLog;
-                    stream.forEach((c) => new Promise<void>((resolve, reject) => {
-                        res.write(c, "utf-8", (err?: Error | null) => {
-                            if (err) {
-                                reject(err);    // propagate write error to upstream
-                            } else {
-                                resolve();  // using a promise here to make backpressure work
-                            }
-                        });
-                    }), (err?: Error) => {
+                const writeToResponse = async (chunk: string) => new Promise<void>((resolve, reject) => {
+                    res.write(chunk, "utf-8", (err?: Error | null) => {
                         if (err) {
-                            reject(err);
+                            reject(err);    // propagate write error to upstream
                         } else {
-                            resolve();
+                            resolve();  // using a promise here to make backpressure work
                         }
-                    }).catch(err => {});    // drop err here because we already forwarded it above
+                    });
                 });
-                res.sendStatus(200);
+                const result = await this.workspaceLogService.streamWorkspaceLog(instance, params.terminalId, writeToResponse);
+                if (Timeout.is(result)) {
+                    res.sendStatus(408);    // request timeout
+                    return;
+                }
+                res.end();
             } catch (err) {
-                res.sendStatus(500);
                 log.error(logCtx, "error streaming headless logs", err);
+                res.end();
             }
         }));
         return router;

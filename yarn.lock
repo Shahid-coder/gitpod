@@ -3164,7 +3164,7 @@
   resolved "https://registry.yarnpkg.com/@improbable-eng/grpc-web-node-http-transport/-/grpc-web-node-http-transport-0.14.0.tgz#3edf05360541b2d7ba799ec0144780a7a9a99383"
   integrity sha512-NGZJgY8zTTWM//9oGdJZ+acmCgcgUcqxu3NV3GMFxw35D+3xkdEz599r9O7urg1Vv0+LzXDvfWEg7qg1Ec8x1w==
 
-"@improbable-eng/grpc-web@^0.14.0":
+"@improbable-eng/grpc-web@0.14.0", "@improbable-eng/grpc-web@^0.14.0":
   version "0.14.0"
   resolved "https://registry.yarnpkg.com/@improbable-eng/grpc-web/-/grpc-web-0.14.0.tgz#a71c5af471dcef6a2810798f71f93ed8d6ac3817"
   integrity sha512-ag1PTMWpBZKGi6GrEcZ4lkU5Qag23Xjo10BmnK9qyx4TMmSVcWmQ3rECirfQzm2uogrM9n1M6xfOpFsJP62ivA==
@@ -20598,13 +20598,6 @@ ts-protoc-gen@^0.13.0:
   integrity sha512-j18X4rkDBbG/ZHUJy88WFeZP6mStGow5uREaohowlHXTu3/N7WcpyPhb7Vh6wN38ERmc/AkT9gqT98+vtlRhJA==
   dependencies:
     google-protobuf "^3.6.1"
-
-ts-stream@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/ts-stream/-/ts-stream-3.0.0.tgz#7f3c1749a8345695cb43ca10cf64c96908f909dd"
-  integrity sha512-inSYkFNWYRDKu+fEriDeTV8KP6BLx/CujUb047sIuMH1YUZcUdjYpwiGsXVyWIEREOFb02e0z6b/cK8lG1i4cw==
-  dependencies:
-    "@types/node" "*"
 
 tsconfig-paths@^3.9.0:
   version "3.9.0"

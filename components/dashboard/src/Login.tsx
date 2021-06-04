@@ -55,7 +55,7 @@ export function Login() {
         // Check for a valid returnTo in payload
         const safeReturnTo = getSafeURLRedirect(payload);
         if (safeReturnTo) {
-            // ... and if it is, redirect to it 
+            // ... and if it is, redirect to it
             window.location.replace(safeReturnTo);
         }
     }

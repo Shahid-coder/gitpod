@@ -69,4 +69,3 @@ Examples:
 
 ### Q: One of my pods throws errors reading "networkPlugin cni failed to set up pod "< name >" network: add cmd: failed to assign an IP address to container"
   A: Seems like the pod-per-node limit is reached: https://github.com/awslabs/amazon-eks-ami/blob/master/files/eni-max-pods.txt . Please report this as this as a bug [here](https://github.com/gitpod-io/gitpod/issues).
-

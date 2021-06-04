@@ -40,4 +40,3 @@ export abstract class RpcServer<Req, Resp> {
     protected abstract handleRequest(req: Req, msg: Message): Promise<Resp>;
 
 }
-

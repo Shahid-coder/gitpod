@@ -30,4 +30,3 @@ install:
 uninstall:
 	rm /lib/modules/$(KVERSION)/fs/$(modname).ko
 	depmod -a
-

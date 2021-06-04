@@ -115,4 +115,3 @@ Third-Party License Terms.
 License Terms in the course of modifications of the Software and in case of
 updates for the Software to the extent necessary due to additional Third-Party
 Components or due to changed Third-Party License Terms.
-

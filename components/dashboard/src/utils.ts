@@ -46,4 +46,3 @@ export const poll = async <T>(initialDelayInSeconds: number, callback: () => Pro
 
     }
 };
-

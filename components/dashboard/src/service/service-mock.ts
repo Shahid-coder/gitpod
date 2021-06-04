@@ -71,4 +71,3 @@ const gitpodServiceMock = createServiceMock({
 });
 
 export { gitpodServiceMock };
-

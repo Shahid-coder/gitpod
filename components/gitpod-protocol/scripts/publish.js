@@ -43,5 +43,3 @@ child_process.execSync([
     "public",
     "--ignore-scripts"
 ].join(" "), { stdio: 'inherit' });
-
-

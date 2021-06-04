@@ -44,4 +44,3 @@ export class BitbucketTokenValidator implements IGitTokenValidator {
         return result;
     }
 }
-

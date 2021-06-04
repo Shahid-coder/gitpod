@@ -46,4 +46,3 @@ export async function query(conn: Connection, sql: string, args?: Without<QueryO
         });
     });
 }
-

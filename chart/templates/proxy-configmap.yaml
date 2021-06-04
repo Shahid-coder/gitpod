@@ -87,4 +87,3 @@ data:
       respond "Not found" 404
     }
 {{- end }}
-

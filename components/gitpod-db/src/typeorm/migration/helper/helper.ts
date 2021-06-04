@@ -48,4 +48,3 @@ export async function tableExists(queryRunner: QueryRunner, tableName: string): 
     );
     return countResult[0].cnt === 1;
 };
-

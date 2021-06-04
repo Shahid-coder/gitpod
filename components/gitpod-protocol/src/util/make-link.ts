@@ -19,4 +19,3 @@ export function makeLink(node: HTMLElement, url: string, hover: string): void {
     node.style.cursor = 'pointer';
     node.title = hover;
 }
-

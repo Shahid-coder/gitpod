@@ -7,7 +7,7 @@
 import { Server, Probot, Context } from 'probot';
 import { getPrivateKey } from '@probot/get-private-key';
 import * as fs from 'fs-extra';
-import { injectable, inject, decorate } from 'inversify';
+import { injectable, inject } from 'inversify';
 import { Env } from '../../../src/env';
 import { AppInstallationDB, TracedWorkspaceDB, DBWithTracing, UserDB, WorkspaceDB } from '@gitpod/gitpod-db/lib';
 import * as express from 'express';
@@ -32,8 +32,6 @@ import { Options, ApplicationFunctionOptions } from 'probot/lib/types';
  * values.yaml file (GITPOD_GITHUB_APP_WEBHOOK_SECRET) - it's not a bad idea to
  * look at those values to begin with.
  */
-
-decorate(injectable(), Probot)
 
 @injectable()
 export class GithubApp {
@@ -75,6 +73,12 @@ export class GithubApp {
         // Backward-compatibility: Redirect old badge URLs (e.g. "/api/apps/github/pbs/github.com/gitpod-io/gitpod/5431d5735c32ab7d5d840a4d1a7d7c688d1f0ce9.svg")
         options.getRouter && options.getRouter('/pbs').get('/*', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
             res.redirect(301, this.getBadgeImageURL());
+        });
+
+        options.getRouter && options.getRouter('/whoami').get('/', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+            const gh = await app.auth();
+            const data = await gh.apps.getAuthenticated();
+            res.json(data)
         });
 
         app.on('installation.created', async ctx => {

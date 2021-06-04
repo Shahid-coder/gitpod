@@ -25,6 +25,7 @@ const Account = React.lazy(() => import(/* webpackPrefetch: true */ './settings/
 const Notifications = React.lazy(() => import(/* webpackPrefetch: true */ './settings/Notifications'));
 const Plans = React.lazy(() => import(/* webpackPrefetch: true */ './settings/Plans'));
 const Teams = React.lazy(() => import(/* webpackPrefetch: true */ './settings/Teams'));
+const NewTeam = React.lazy(() => import(/* webpackPrefetch: true */ './settings/NewTeam'));
 const EnvironmentVariables = React.lazy(() => import(/* webpackPrefetch: true */ './settings/EnvironmentVariables'));
 const Integrations = React.lazy(() => import(/* webpackPrefetch: true */ './settings/Integrations'));
 const Preferences = React.lazy(() => import(/* webpackPrefetch: true */ './settings/Preferences'));
@@ -148,6 +149,7 @@ function App() {
                 <Route path="/notifications" exact component={Notifications} />
                 <Route path="/plans" exact component={Plans} />
                 <Route path="/teams" exact component={Teams} />
+                <Route path="/new-team" exact component={NewTeam} />
                 <Route path="/variables" exact component={EnvironmentVariables} />
                 <Route path="/preferences" exact component={Preferences} />
                 <Route path="/install-github-app" exact component={InstallGitHubApp} />
@@ -179,7 +181,7 @@ function App() {
                 </Route>
                 <Route path="*" render={
                     (match) => {
-                        
+
                         return isGitpodIo() ?
                             // delegate to our website to handle the request
                             (window.location.host = 'www.gitpod.io') :
@@ -219,30 +221,25 @@ function getURLHash() {
 }
 
 const renderMenu = (user?: User) => {
-    const left = [
-        {
-            title: 'Workspaces',
-            link: '/workspaces',
-            alternatives: ['/']
-        },
-        {
-            title: 'Settings',
-            link: '/settings',
-            alternatives: settingsMenu.flatMap(e => e.link)
-        }
-    ];
-
-    if (user && user?.rolesOrPermissions?.includes('admin')) {
-        left.push({
-            title: 'Admin',
-            link: '/admin',
-            alternatives: adminMenu.flatMap(e => e.link)
-        });
-    }
-
     return <Menu
-        left={left}
+        left={[
+            {
+                title: 'Workspaces',
+                link: '/workspaces',
+                alternatives: ['/']
+            },
+            {
+                title: 'Settings',
+                link: '/settings',
+                alternatives: settingsMenu.flatMap(e => e.link)
+            }
+        ]}
         right={[
+            ...(user?.rolesOrPermissions?.includes('admin') ? [{
+                title: 'Admin',
+                link: '/admin',
+                alternatives: adminMenu.flatMap(e => e.link)
+            }] : []),
             {
                 title: 'Docs',
                 link: 'https://www.gitpod.io/docs/',
@@ -252,6 +249,7 @@ const renderMenu = (user?: User) => {
                 link: 'https://community.gitpod.io/',
             }
         ]}
+        showTeams={!!user?.rolesOrPermissions?.includes('teams-and-projects')}
     />;
 }
 

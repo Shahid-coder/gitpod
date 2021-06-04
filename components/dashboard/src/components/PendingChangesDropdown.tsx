@@ -34,7 +34,7 @@ export default function PendingChangesDropdown(props: { workspaceInstance?: Work
   if (totalChanges <= 0) {
     return <p>No Changes</p>;
   }
-  return <ContextMenu menuEntries={menuEntries} width="w-64 max-h-48 overflow-scroll mx-auto left-0 right-0">
+  return <ContextMenu menuEntries={menuEntries} classes="w-64 max-h-48 overflow-scroll mx-auto left-0 right-0">
     <p className="flex justify-center text-gitpod-red">
       <span>{totalChanges} Change{totalChanges === 1 ? '' : 's'}</span>
       <img className="m-2" src={CaretDown}/>

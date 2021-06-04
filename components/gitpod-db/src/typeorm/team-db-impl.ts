@@ -7,6 +7,7 @@
 import { inject, injectable } from "inversify";
 import { TypeORM } from "./typeorm";
 import { Repository } from "typeorm";
+import * as uuidv4 from 'uuid/v4';
 import { TeamDB } from "../team-db";
 import { DBTeam } from "./entity/db-team";
 import { DBTeamMembership } from "./entity/db-team-membership";
@@ -33,5 +34,30 @@ export class TeamDBImpl implements TeamDB {
         const membershipRepo = await this.getMembershipRepo();
         const memberships = await membershipRepo.find({ userId });
         return teamRepo.findByIds(memberships.map(m => m.teamId));
+    }
+
+    public async createTeam(userId: string, name: string): Promise<Team> {
+        if (!name) {
+            throw new Error('Team name cannot be empty');
+        }
+        const teamRepo = await this.getTeamRepo();
+        const existingTeam = await teamRepo.findOne({ name });
+        if (!!existingTeam) {
+            throw new Error('A team with this name already exists');
+        }
+        const team: Team = {
+            id: uuidv4(),
+            name,
+            creationTime: new Date().toISOString(),
+        }
+        await teamRepo.save(team);
+        const membershipRepo = await this.getMembershipRepo();
+        await membershipRepo.save({
+            id: uuidv4(),
+            teamId: team.id,
+            userId,
+            creationTime: team.creationTime,
+        });
+        return team;
     }
 }

@@ -1385,9 +1385,14 @@ export class GitpodServerImpl<Client extends GitpodClient, Server extends Gitpod
 
     public async getTeams(): Promise<Team[]> {
         // Note: this operation is per-user only, hence needs no resource guard
-        const user = this.checkUser("deleteEnvVar");
-
+        const user = this.checkUser("getTeams");
         return this.teamDB.findTeamsByUser(user.id);
+    }
+
+    public async createTeam(name: string): Promise<Team> {
+        // Note: this operation is per-user only, hence needs no resource guard
+        const user = this.checkUser("createTeam");
+        return this.teamDB.createTeam(user.id, name);
     }
 
     public async getContentBlobUploadUrl(name: string): Promise<string> {

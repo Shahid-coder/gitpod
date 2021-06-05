@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect, useContext } from "react";
 import { countries } from 'countries-list';
-import { AccountStatement, Subscription, UserPaidSubscription, AssignedTeamSubscription } from "@gitpod/gitpod-protocol/lib/accounting-protocol";
+import { AccountStatement, Subscription, UserPaidSubscription, AssignedTeamSubscription, CreditDescription } from "@gitpod/gitpod-protocol/lib/accounting-protocol";
 import { PlanCoupon, GithubUpgradeURL } from "@gitpod/gitpod-protocol/lib/payment-protocol";
 import { Plans, Plan, Currency, PlanType } from "@gitpod/gitpod-protocol/lib/plans";
 import { ChargebeeClient } from "../chargebee/chargebee-client";
@@ -433,7 +433,7 @@ export default function () {
                 {!assignedTs && (
                     <p className="text-base w-96 m-auto">Upgrade your plan to get access to private repositories or more parallel workspaces.</p>
                 )}
-                <p className="mt-2 font-semibold text-gray-500">Remaining hours: {typeof(accountStatement?.remainingHours) === 'number'
+                <p className="mt-2 font-semibold text-gray-500" title={guessCurrentBillingCycle(currentPlan, accountStatement).map(d => d.toLocaleDateString()).join(' - ')}>Remaining hours: {typeof(accountStatement?.remainingHours) === 'number'
                     ? Math.floor(accountStatement.remainingHours * 10) / 10
                     : accountStatement?.remainingHours}</p>
                 {(typeof(accountStatement?.remainingHours) === 'number' && typeof(currentPlan.hoursPerMonth) === 'number')
@@ -597,5 +597,22 @@ function applyCoupons(plan: Plan, coupons: PlanCoupon[] | undefined): PlanWithOr
         ...plan,
         pricePerMonth: coupon.newPrice || 0,
         originalPrice: plan.pricePerMonth
+    }
+}
+
+// Look for relevant billing cycle dates in the account statement's computed credits.
+function guessCurrentBillingCycle(currentPlan: Plan, accountStatement?: AccountStatement): Date[] {
+    if (!accountStatement) {
+        return [];
+    }
+    try {
+        const now = new Date().toISOString();
+        const credit = accountStatement.credits.find(c => c.date < now && c.expiryDate >= now && (c.description as CreditDescription)?.planId === currentPlan.chargebeeId);
+        if (!!credit) {
+            return [new Date(credit.date), new Date(credit.expiryDate)];
+        }
+        return [];
+    } catch (error) {
+        return [];
     }
 }

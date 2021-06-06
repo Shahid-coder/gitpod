@@ -16,7 +16,6 @@ import { WorkspaceConfig, User, GithubAppPrebuildConfig, Disposable } from '@git
 import { MessageBusIntegration } from '../../../src/workspace/messagebus-integration';
 import { HeadlessWorkspaceEventType, HeadlessLogEvent } from '@gitpod/gitpod-protocol/lib/headless-workspace-log';
 import { GithubAppRules } from './github-app-rules';
-import * as Octokit from '@octokit/rest';
 import { TraceContext } from '@gitpod/gitpod-protocol/lib/util/tracing';
 import { PrebuildManager } from './prebuild-manager';
 import { PrebuildStatusMaintainer } from './prebuilt-status-maintainer';
@@ -67,8 +66,14 @@ export class GithubApp {
     }
 
     protected async buildApp(app: Probot, options: ApplicationFunctionOptions) {
-        this.statusMaintainer.start(async id => (await app.auth(parseInt(id))) as any as Octokit);
-        // this.queueMaintainer.start();
+        this.statusMaintainer.start(async (id) => {
+            try {
+                const githubApi = await app.auth(parseInt(id));
+                return githubApi;
+            } catch (error) {
+                log.error("Failes to authorize GH API for Probot", { error })
+            }
+        });
 
         // Backward-compatibility: Redirect old badge URLs (e.g. "/api/apps/github/pbs/github.com/gitpod-io/gitpod/5431d5735c32ab7d5d840a4d1a7d7c688d1f0ce9.svg")
         options.getRouter && options.getRouter('/pbs').get('/*', async (req: express.Request, res: express.Response, next: express.NextFunction) => {

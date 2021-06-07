@@ -29,6 +29,11 @@ export class TeamDBImpl implements TeamDB {
         return (await this.getEntityManager()).getRepository<DBTeamMembership>(DBTeamMembership);
     }
 
+    public async findTeamByName(name: string): Promise<Team | undefined> {
+        const teamRepo = await this.getTeamRepo();
+        return teamRepo.findOne({ name });
+    }
+
     public async findTeamsByUser(userId: string): Promise<Team[]> {
         const teamRepo = await this.getTeamRepo();
         const membershipRepo = await this.getMembershipRepo();

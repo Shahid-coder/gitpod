@@ -1389,6 +1389,16 @@ export class GitpodServerImpl<Client extends GitpodClient, Server extends Gitpod
         return this.teamDB.findTeamsByUser(user.id);
     }
 
+    public async getTeam(name: string): Promise<Team>  {
+        const user = this.checkUser("getTeam");
+        const team = await this.teamDB.findTeamByName(name);
+        if (!team) {
+            throw new ResponseError(ErrorCodes.NOT_FOUND, "Team not found");
+        }
+        await this.guardAccess({ kind: "team", subject: team, memberIDs: [], userId: user.id }, "get");
+
+    }
+
     public async createTeam(name: string): Promise<Team> {
         // Note: this operation is per-user only, hence needs no resource guard
         const user = this.checkUser("createTeam");

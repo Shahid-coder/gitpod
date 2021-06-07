@@ -109,6 +109,7 @@ export interface GitpodServer extends JsonRpcServer<GitpodClient>, AdminServer, 
 
     // teams and projects
     getTeams(): Promise<Team[]>;
+    getTeam(name: string): Promise<Team>;
     createTeam(name: string): Promise<Team>;
 
     // content service

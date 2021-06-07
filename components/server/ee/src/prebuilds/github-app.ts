@@ -62,6 +62,7 @@ export class GithubApp {
                 secret: env.githubAppWebhookSecret
             })
             this.server.load(this.buildApp.bind(this));
+            this.server.probotApp.auth()
         }
     }
 
@@ -106,6 +107,23 @@ export class GithubApp {
 
         app.on(['pull_request.opened', 'pull_request.synchronize', 'pull_request.reopened'], async ctx => {
             await this.handlePullRequest(ctx);
+        });
+
+        options.getRouter && options.getRouter('/reconfigure').get('/', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+            const gh = await app.auth();
+            const data = await gh.apps.getAuthenticated();
+            const slug = data.data.slug;
+            
+            const state = req.query.state;
+            res.redirect(`https://github.com/apps/${slug}/installations/new?state=${state}`)
+        });
+        options.getRouter && options.getRouter('/setup').get('/', async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+            // const gh = await app.auth();
+            
+            // const installationId = req.query.installation_id;
+            // const setupAction = req.query.setup_action;
+            const state = req.query.state;
+            res.redirect(state)
         });
     }
 

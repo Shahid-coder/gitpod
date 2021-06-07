@@ -1775,4 +1775,27 @@ export class GitpodServerImpl<Client extends GitpodClient, Server extends Gitpod
     }
     //
     //#endregion
+
+
+
+    //#region Projects concerns
+    //
+    async getProviderAccounts(provider: string): Promise<string[]> {
+        const user = this.checkAndBlockUser("getProviderAccounts");
+        const result: string[] = [];
+        const authProviderId = this.hostContextProvider.get(provider)?.authProvider?.authProviderId;
+        if (authProviderId) {
+            const identity = user.identities.find(i => i.authProviderId === authProviderId);
+            if (identity) {
+                result.push(identity.authName);
+            }
+        }
+        return result;
+    }
+    async getProviderAccountRepositories(provider: string, account: string): Promise<string[]> {
+        this.checkAndBlockUser("getProviderAccountRepositories");
+        return [];
+    }
+    //
+    //#endregion
 }

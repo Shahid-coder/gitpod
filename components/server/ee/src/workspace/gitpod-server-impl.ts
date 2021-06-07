@@ -39,6 +39,8 @@ import { ChargebeeService } from "../user/chargebee-service";
 import { Chargebee as chargebee } from '@gitpod/gitpod-payment-endpoint/lib/chargebee';
 import { EnvEE } from "../env";
 
+import { GithubApp } from "../prebuilds/github-app";
+
 @injectable()
 export class GitpodServerEEImpl extends GitpodServerImpl<GitpodClient, GitpodServer> {
     @inject(LicenseEvaluator) protected readonly licenseEvaluator: LicenseEvaluator;
@@ -64,6 +66,8 @@ export class GitpodServerEEImpl extends GitpodServerImpl<GitpodClient, GitpodSer
     @inject(UpgradeHelper) protected readonly upgradeHelper: UpgradeHelper;
     @inject(ChargebeeCouponComputer) protected readonly couponComputer: ChargebeeCouponComputer;
     @inject(ChargebeeService) protected readonly chargebeeService: ChargebeeService;
+
+    @inject(GithubApp) protected readonly githubApp: GithubApp;
 
     @inject(EnvEE) protected readonly env: EnvEE;
 
@@ -1421,4 +1425,22 @@ export class GitpodServerEEImpl extends GitpodServerImpl<GitpodClient, GitpodSer
         await this.subscriptionService.addCredit(user.id, 50, now);
         return 'Thank you for you feedback. We have added 50 Gitpod Hours to your account. Have fun!';
     }
+
+    //#region Projects concerns
+    //
+    async getProviderAccountRepositories(provider: string, account: string): Promise<string[]> {
+        this.checkAndBlockUser("getProviderAccountRepositories");
+
+        const probot = this.githubApp.server?.probotApp;
+        if (probot) {
+            const api = await probot.auth();
+            const installations = await api.apps.listInstallations();
+            const installationsInAccount = installations.data.filter(i => i.account === account);
+            return installationsInAccount.map(i => i.account?.name!);
+        }
+
+        return [];
+    }
+    //
+    //#endregion
 }

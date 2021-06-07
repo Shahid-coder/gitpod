@@ -146,6 +146,9 @@ function readConfig(): RateLimiterConfig {
         "tsGetUnassignedSlot":  { group: "default", points: 1 },
         "tsReactivateSlot":  { group: "default", points: 1 },
         "tsReassignSlot":  { group: "default", points: 1 },
+
+        "getProviderAccounts":  { group: "default", points: 1 },
+        "getProviderAccountRepositories":  { group: "default", points: 1 },
     };
 
     const fromEnv = JSON.parse(process.env.RATE_LIMITER_CONFIG || "{}")

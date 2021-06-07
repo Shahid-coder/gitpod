@@ -35,6 +35,7 @@ const FromReferrer = React.lazy(() => import(/* webpackPrefetch: true */ './From
 const UserSearch = React.lazy(() => import(/* webpackPrefetch: true */ './admin/UserSearch'));
 const WorkspacesSearch = React.lazy(() => import(/* webpackPrefetch: true */ './admin/WorkspacesSearch'));
 const OAuthClientApproval = React.lazy(() => import(/* webpackPrefetch: true */ './OauthClientApproval'));
+const NewProject = React.lazy(() => import(/* webpackPrefetch: true */ './NewProject'));
 
 function Loading() {
     return <>
@@ -138,6 +139,7 @@ function App() {
         <div className="container">
             {renderMenu(user)}
             <Switch>
+                <Route path="/new" exact component={NewProject} />
                 <Route path="/setup" exact component={Setup} />
                 <Route path="/workspaces" exact component={Workspaces} />
                 <Route path="/account" exact component={Account} />

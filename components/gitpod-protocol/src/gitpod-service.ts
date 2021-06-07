@@ -193,6 +193,12 @@ export interface GitpodServer extends JsonRpcServer<GitpodClient>, AdminServer, 
 
     getGithubUpgradeUrls(): Promise<GithubUpgradeURL[]>;
 
+    /**
+     * Projects
+     */
+    getProviderAccounts(provider: string): Promise<string[]>;
+    getProviderAccountRepositories(provider: string, account: string): Promise<string[]>;
+
 }
 
 export const WorkspaceTimeoutValues = ["30m", "60m", "180m"] as const;

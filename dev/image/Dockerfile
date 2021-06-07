@@ -37,6 +37,16 @@ RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key a
     && install-packages kubectl=1.20.0-00 \
     && kubectl completion bash > /usr/share/bash-completion/completions/kubectl
 
+### QEMU (x86) and workspace kernel development tools
+RUN apt-get update \
+    && apt-get install -yq qemu qemu-system-x86 linux-image-$(uname -r) libguestfs-tools \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*
+
+### Clang and LLVM
+RUN apt-get update \
+    && apt-get install -yq clang-7 llvm-7 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*
+
 RUN curl -fsSL -o /usr/bin/kubectx https://raw.githubusercontent.com/ahmetb/kubectx/master/kubectx && chmod +x /usr/bin/kubectx \
  && curl -fsSL -o /usr/bin/kubens  https://raw.githubusercontent.com/ahmetb/kubectx/master/kubens  && chmod +x /usr/bin/kubens
 
